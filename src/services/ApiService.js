@@ -1,0 +1,1 @@
+export const PROD_API = "http://10.0.2.2:58186/api"

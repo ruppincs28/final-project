@@ -15,6 +15,7 @@ function Auth(props) {
     useEffect(() => {
         getAsyncLocalStorage().then(data => {
             if (data !== "") {
+                // Let the splash screen show for a while
                 setTimeout(() => props.navigation.navigate('CategoriesView'), 2000);
             }
         });

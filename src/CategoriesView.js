@@ -47,7 +47,7 @@ function CategoriesView({ navigation }) {
     }
 
     const removeFew = async () => {
-        const allKeys0 = await AsyncStorage.getAllKeys() 
+        const allKeys0 = await AsyncStorage.getAllKeys()
         console.log(allKeys0)
         const keys = ['loggedInAs']
         try {
@@ -56,7 +56,7 @@ function CategoriesView({ navigation }) {
             // remove error
         }
         console.log('Done')
-        const allKeys = await AsyncStorage.getAllKeys() 
+        const allKeys = await AsyncStorage.getAllKeys()
         console.log(allKeys)
     }
 

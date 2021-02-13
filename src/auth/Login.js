@@ -59,7 +59,10 @@ export default class Login extends Component {
             .then(resp => resp.json())
             .then((resp) => {
                 if (resp !== "Invalid Credentials") {
-                    this.storeInAsyncLocalStorage(this.state.username);
+                    this.storeInAsyncLocalStorage(this.state.username).then(() => {
+                        this.props.navigation.navigate('DashboardTab');
+                    });
+
                 }
             }, error => console.log(error))
     }

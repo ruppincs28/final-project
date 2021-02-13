@@ -9,6 +9,7 @@ import Login from '../auth/Login'
 import Splash from '../layout/Splash'
 import Register from '../auth/Register'
 import Auth from '../auth/Auth';
+import DashboardTabScreen from './DashboardTabScreen';
 
 const StackNavigator = createStackNavigator(
     {
@@ -26,6 +27,9 @@ const StackNavigator = createStackNavigator(
         // },
         Splash: {
             screen: Splash
+        },
+        DashboardTab: {
+            screen: DashboardTabScreen
         },
         Auth: {
             screen: Auth

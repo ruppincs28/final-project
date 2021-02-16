@@ -1,53 +1,73 @@
 import React, { Component } from 'react';
 import { View, Text, Image, ScrollView, Linking } from 'react-native';
-import { parse } from 'fast-xml-parser';
 import { Card, Icon } from 'react-native-elements';
 import { Button } from 'react-native-paper';
 import MapView from 'react-native-maps';
 import { JOBS_API } from './services/ApiService';
 import { Searchbar } from 'react-native-paper';
+import * as Location from 'expo-location';
 
 export default class JobSearch extends Component {
     state = {
         search: '',
+        location: '',
         jobs: []
     };
 
-    componentDidMount() {
-        fetch(`${JOBS_API}`, {
+    async componentDidMount() {
+        let { status } = await Location.requestPermissionsAsync();
+        if (status !== 'granted') {
+            setErrorMsg('Permission to access location was denied');
+            return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        this.setState({ location: location })
+
+        this.getJobs();
+    }
+
+    getJobs() {
+        fetch(`${JOBS_API}lat=${this.state.location.coords.latitude}&long=${this.state.location.coords.longitude}`, {
             method: 'GET',
             headers: new Headers({
                 'Content-Type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json; charset=UTF-8'
             })
         })
-            .then(resp => resp.text(), error => console.log(error))
-            .then(str => parse(str))
-            .then(data => this.setState({ jobs: data.rss.channel.item }), error => console.log(error))
+            .then(resp => resp.json(), error => console.log(error))
+            .then(data => this.setState({ jobs: data }), error => console.log(error))
     }
 
     updateSearch = (search) => {
         this.setState({ search });
     };
 
+    formatDate(string) {
+        var options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(string).toLocaleDateString([], options);
+    }
+
     renderJobs() {
         return this.state.jobs.map(job => {
             const {
-                link,
+                url,
                 title,
-                guid,
-                pubDate
+                id,
+                company,
+                created_at,
+                how_to_apply,
+                company_logo
             } = job;
-            const company = job["a10:author"]["a10:name"];
 
             return (
-                <Card title={title} key={guid}>
+                <Card title={title} key={id}>
                     <View style={{ height: 220 }}>
                         <View style={{
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}>
-                            <Image source={{ uri: "https://logo.uplead.com/takeaway.com" }} style={{
+                            <Image source={{ uri: company_logo }} style={{
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 resizeMode: 'center',
@@ -57,17 +77,17 @@ export default class JobSearch extends Component {
                         </View>
                         <View style={styles.detailWrapper}>
                             <Text style={styles.italics}>{company}</Text>
-                            <Text style={styles.italics}>{pubDate.replace("Z", "")}</Text>
+                            <Text style={styles.italics}>{this.formatDate(created_at)}</Text>
                         </View>
                         {/* <Button
                             title="Apply Now!"
                             backgroundColor="#03A9F4"
                             onPress={() => Linking.openURL(link)}
                         /> */}
-                        <Button color="blue" icon="briefcase" mode="contained" onPress={() => Linking.openURL(link)}>
+                        <Button color="blue" icon="briefcase" mode="contained" onPress={() => Linking.openURL(url)}>
                             Apply Now!
                         </Button>
-                        <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained" onPress={() => Linking.openURL(link)}>
+                        <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained" onPress={() => Linking.openURL(url)}>
                             Add to favorites!
                         </Button>
                     </View>

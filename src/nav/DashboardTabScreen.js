@@ -4,22 +4,7 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import CategoriesView from '../CategoriesView';
 import JobSearch from '../JobSearch';
-
-const FirstScreen = () => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>First!</Text>
-        </View>
-    );
-}
-
-const SecondScreen = () => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Second!</Text>
-        </View>
-    );
-}
+import JobFavorites from '../JobFavorites';
 
 const ThirdScreen = () => {
     return (
@@ -39,7 +24,7 @@ const FourthScreen = () => {
 
 const DashboardTabScreen = createBottomTabNavigator(
     {
-        First: {
+        JobSearch: {
             screen: JobSearch,
             navigationOptions: {
                 tabBarLabel: 'Job Search',
@@ -48,8 +33,8 @@ const DashboardTabScreen = createBottomTabNavigator(
                 }
             }
         },
-        Second: {
-            screen: SecondScreen,
+        JobFavorites: {
+            screen: JobFavorites,
             navigationOptions: {
                 tabBarLabel: 'Favorites',
                 tabBarIcon: ({ tintColor }) => {
@@ -77,7 +62,7 @@ const DashboardTabScreen = createBottomTabNavigator(
         }
     },
     {
-        initialRouteName: 'Second',
+        initialRouteName: 'Third',
         tabBarOptions: {
             activeTintColor: '#e91e63',
             showIcon: true

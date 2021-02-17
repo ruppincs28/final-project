@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { View, Text, Image, ScrollView, Linking } from 'react-native';
+import { Alert, View, Text, Image, ScrollView, Linking } from 'react-native';
 import { Card, Icon } from 'react-native-elements';
 import { Button } from 'react-native-paper';
 import MapView from 'react-native-maps';
 import { JOBS_API } from './services/ApiService';
+import { PROD_API } from './services/ApiService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
 
@@ -21,13 +23,14 @@ export default class JobSearch extends Component {
             return;
         }
 
-        let location = await Location.getCurrentPositionAsync({});
+        let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
         this.setState({ location: location })
 
         this.getJobs();
     }
 
     getJobs() {
+        console.log(`${JOBS_API}lat=${this.state.location.coords.latitude}&long=${this.state.location.coords.longitude}`)
         fetch(`${JOBS_API}lat=${this.state.location.coords.latitude}&long=${this.state.location.coords.longitude}`, {
             method: 'GET',
             headers: new Headers({
@@ -48,6 +51,34 @@ export default class JobSearch extends Component {
         return new Date(string).toLocaleDateString([], options);
     }
 
+    async asyncGetUserNameFromLocalStorage() {
+        try {
+            const value = await AsyncStorage.getItem('loggedInAs');
+            if (value !== null) {
+                return value;
+            } else {
+                return "";
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    handleAddToFavorites(username, job) {
+        fetch(`${PROD_API}/jobs/username/${username}`, {
+            method: 'POST',
+            body: JSON.stringify(job),
+            headers: new Headers({
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Accept': 'application/json; charset=UTF-8'
+            })
+        })
+            .then(resp => resp.json())
+            .then(() => Alert.alert(
+                'Job added to favorites successfully'
+            ), error => console.log(error))
+    }
+
     renderJobs() {
         return this.state.jobs.map(job => {
             const {
@@ -61,7 +92,7 @@ export default class JobSearch extends Component {
             } = job;
 
             return (
-                <Card title={title} key={id}>
+                <Card title={title} key={id} jobId={id}>
                     <View style={{ height: 220 }}>
                         <View style={{
                             alignItems: 'center',
@@ -79,15 +110,18 @@ export default class JobSearch extends Component {
                             <Text style={styles.italics}>{company}</Text>
                             <Text style={styles.italics}>{this.formatDate(created_at)}</Text>
                         </View>
-                        {/* <Button
-                            title="Apply Now!"
-                            backgroundColor="#03A9F4"
-                            onPress={() => Linking.openURL(link)}
-                        /> */}
-                        <Button color="blue" icon="briefcase" mode="contained" onPress={() => Linking.openURL(url)}>
-                            Apply Now!
+                        <Button color="#03A9F4" icon="dots-horizontal-circle" mode="contained" onPress={() => Linking.openURL(url)}>
+                            Show more
                         </Button>
-                        <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained" onPress={() => Linking.openURL(url)}>
+                        <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained"
+                            onPress={() => this.asyncGetUserNameFromLocalStorage().then(username => this.handleAddToFavorites(username, {
+                                Id: id,
+                                Title: title,
+                                Company: company,
+                                CreatedAt: created_at,
+                                Url: url,
+                                CompanyLogo: company_logo
+                            }))}>
                             Add to favorites!
                         </Button>
                     </View>
@@ -113,9 +147,8 @@ export default class JobSearch extends Component {
             </>
             :
             <View style={styles.titleContainer}>
-                <Text style={styles.title}>No jobs were found</Text>
+                <Text style={styles.title}>Searching for jobs in your area...</Text>
             </View>
-            ;
     }
 }
 
@@ -124,10 +157,9 @@ const styles = {
         fontStyle: 'italic'
     },
     detailWrapper: {
-        marginTop: 10,
-        marginBottom: 10,
         flexDirection: 'row',
-        justifyContent: 'space-around'
+        justifyContent: 'space-around',
+        marginBottom: 10
     },
     titleContainer: {
         alignItems: 'center',

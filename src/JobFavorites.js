@@ -114,7 +114,7 @@ class JobFavorites extends Component {
             </>
             :
             <View style={styles.titleContainer}>
-                <Text style={styles.title}>No jobs were found</Text>
+                <Text style={styles.title}>Fetching favorite jobs...</Text>
             </View>
     }
 }

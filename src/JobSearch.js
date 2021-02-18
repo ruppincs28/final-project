@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, View, Text, Image, ScrollView, Linking } from 'react-native';
+import { Alert, View, Text, Image, ScrollView, Linking, StyleSheet, TextInput } from 'react-native';
 import { Card, Icon } from 'react-native-elements';
 import { Button } from 'react-native-paper';
 import MapView from 'react-native-maps';
@@ -8,13 +8,17 @@ import { PROD_API } from './services/ApiService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
+import BottomSheet from 'reanimated-bottom-sheet';
 
 export default class JobSearch extends Component {
     state = {
         search: '',
         location: '',
-        jobs: []
+        jobs: [],
+        modalHtml: ''
     };
+
+    bs = React.createRef();
 
     async componentDidMount() {
         let { status } = await Location.requestPermissionsAsync();
@@ -110,7 +114,10 @@ export default class JobSearch extends Component {
                             <Text style={styles.italics}>{company}</Text>
                             <Text style={styles.italics}>{this.formatDate(created_at)}</Text>
                         </View>
-                        <Button color="#03A9F4" icon="dots-horizontal-circle" mode="contained" onPress={() => Linking.openURL(url)}>
+                        <Button color="#03A9F4" icon="dots-horizontal-circle" mode="contained" onPress={() => {
+                            this.setState({ modalHtml: how_to_apply });
+                            this.bs.current.snapTo(0);
+                        }}>
                             Show more
                         </Button>
                         <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained"
@@ -130,11 +137,40 @@ export default class JobSearch extends Component {
         });
     }
 
+    renderHeader() {
+        return (
+            <View style={styles.header}>
+                <View style={styles.panelHeader}>
+                    <View style={styles.panelHandle} />
+                </View>
+            </View>
+        )
+    }
+
+    renderInner() {
+        return (
+            <View style={styles.panel}>
+                <Text style={styles.panelTitle}>Job Description</Text>
+                <Text style={{ marginTop: 10 }}>
+                    {this.state.modalHtml}
+                </Text>
+            </View>
+        )
+    }
+
     render() {
         const { search } = this.state;
 
         return this.state.jobs.length !== 0 ?
-            <>
+            <View style={styles.container}>
+                <BottomSheet
+                    ref={this.bs}
+                    snapPoints={[550, 300, 0]}
+                    borderRadius={10}
+                    renderContent={() => this.renderInner()}
+                    renderHeader={() => this.renderHeader()}
+                    initialSnap={2}
+                />
                 <Searchbar
                     placeholder="Search for a position"
                     onChangeText={this.updateSearch}
@@ -144,7 +180,7 @@ export default class JobSearch extends Component {
                 <ScrollView style={{ marginTop: 20 }}>
                     {this.renderJobs()}
                 </ScrollView>
-            </>
+            </View>
             :
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>Searching for jobs in your area...</Text>
@@ -177,5 +213,81 @@ const styles = {
         height: 50,
         zIndex: 1,
         backgroundColor: 'white'
-    }
+    },
+    search: {
+        borderColor: 'gray',
+        borderWidth: StyleSheet.hairlineWidth,
+        height: 40,
+        borderRadius: 10,
+        paddingHorizontal: 15,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#F5FCFF',
+    },
+    box: {
+        width: 200,
+        height: 200,
+    },
+    panelContainer: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    panel: {
+        height: 600,
+        padding: 20,
+        backgroundColor: '#f7f5eee8',
+    },
+    header: {
+        backgroundColor: '#f7f5eee8',
+        shadowColor: '#000000',
+        paddingTop: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+    panelHeader: {
+        alignItems: 'center',
+    },
+    panelHandle: {
+        width: 40,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#00000040',
+        marginBottom: 10,
+    },
+    panelTitle: {
+        fontSize: 27,
+        height: 35,
+        textAlign: 'center'
+    },
+    panelSubtitle: {
+        fontSize: 14,
+        color: 'gray',
+        height: 30,
+        marginBottom: 10,
+    },
+    panelButton: {
+        padding: 20,
+        borderRadius: 10,
+        backgroundColor: '#318bfb',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    panelButtonTitle: {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    photo: {
+        width: '100%',
+        height: 225,
+        marginTop: 30,
+    },
+    map: {
+        height: '100%',
+        width: '100%',
+    },
 };

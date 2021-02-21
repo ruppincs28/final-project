@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import { Alert, View, Text, Image, ScrollView, Linking, StyleSheet, TextInput } from 'react-native';
+import { Alert, View, Text, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, Linking } from 'react-native';
 import { Card, Icon } from 'react-native-elements';
 import { Button } from 'react-native-paper';
-import MapView from 'react-native-maps';
-import { JOBS_API } from './services/ApiService';
-import { PROD_API } from './services/ApiService';
+import { JOBS_API, PROD_API } from './services/ApiService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
+import HTML from "react-native-render-html";
+import { WebView } from 'react-native-webview';
+import JSSoup from 'jssoup';
 import BottomSheet from 'reanimated-bottom-sheet';
 
 export default class JobSearch extends Component {
@@ -15,7 +16,9 @@ export default class JobSearch extends Component {
         search: '',
         location: '',
         jobs: [],
-        modalHtml: ''
+        queriedJobs: [],
+        modalHtml: '&nbsp;',
+        applyHtml: '&nbsp;'
     };
 
     bs = React.createRef();
@@ -43,11 +46,15 @@ export default class JobSearch extends Component {
             })
         })
             .then(resp => resp.json(), error => console.log(error))
-            .then(data => this.setState({ jobs: data }), error => console.log(error))
+            .then(data => {
+                this.setState({ jobs: data });
+                this.setState({ queriedJobs: data });
+            }, error => console.log(error))
     }
 
-    updateSearch = (search) => {
-        this.setState({ search });
+    updateSearch = (text) => {
+        this.setState({ search: text });
+        this.setState({ queriedJobs: this.state.jobs.filter(job => job.title.includes(text)) });
     };
 
     formatDate(string) {
@@ -84,10 +91,11 @@ export default class JobSearch extends Component {
     }
 
     renderJobs() {
-        return this.state.jobs.map(job => {
+        return this.state.queriedJobs.map(job => {
             const {
                 url,
                 title,
+                description,
                 id,
                 company,
                 created_at,
@@ -115,7 +123,7 @@ export default class JobSearch extends Component {
                             <Text style={styles.italics}>{this.formatDate(created_at)}</Text>
                         </View>
                         <Button color="#03A9F4" icon="dots-horizontal-circle" mode="contained" onPress={() => {
-                            this.setState({ modalHtml: how_to_apply });
+                            this.setState({ modalHtml: description, applyHtml: how_to_apply });
                             this.bs.current.snapTo(0);
                         }}>
                             Show more
@@ -148,13 +156,23 @@ export default class JobSearch extends Component {
     }
 
     renderInner() {
+        let soup = new JSSoup(this.state.applyHtml);
+        let a = soup.find('a');
+        
         return (
-            <View style={styles.panel}>
-                <Text style={styles.panelTitle}>Job Description</Text>
-                <Text style={{ marginTop: 10 }}>
-                    {this.state.modalHtml}
-                </Text>
-            </View>
+            <>
+                <View style={styles.panel}>
+                    <Text style={styles.panelTitle}>Job Description</Text>
+                    <HTML
+                        source={{ html: this.state.modalHtml }}
+                    />
+                    <WebView
+                        style={{ backgroundColor: '#f7f5eee8', height: 20 }}
+                        originWhitelist={['*']}
+                        source={{ html: '<div style="color:black;height:20px;font-size:50px;"><a href="' + a?.attrs.href + '" >' + a?.attrs.href + '</a></div>' }}
+                    />
+                </View>
+            </>
         )
     }
 
@@ -237,7 +255,7 @@ const styles = {
         right: 0,
     },
     panel: {
-        height: 600,
+        height: 2000,
         padding: 20,
         backgroundColor: '#f7f5eee8',
     },

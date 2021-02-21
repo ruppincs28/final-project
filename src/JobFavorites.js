@@ -3,7 +3,6 @@ import { View, Text, Image, ScrollView, Linking } from 'react-native';
 import { Card, Icon } from 'react-native-elements';
 import { withNavigation } from 'react-navigation';
 import { Button } from 'react-native-paper';
-import MapView from 'react-native-maps';
 import { JOBS_API } from './services/ApiService';
 import { PROD_API } from './services/ApiService';
 import AsyncStorage from '@react-native-async-storage/async-storage';

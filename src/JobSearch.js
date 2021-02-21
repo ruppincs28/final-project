@@ -7,7 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
 import HTML from "react-native-render-html";
-import { WebView } from 'react-native-webview';
 import JSSoup from 'jssoup';
 import BottomSheet from 'reanimated-bottom-sheet';
 
@@ -158,7 +157,7 @@ export default class JobSearch extends Component {
     renderInner() {
         let soup = new JSSoup(this.state.applyHtml);
         let a = soup.find('a');
-        
+
         return (
             <>
                 <View style={styles.panel}>
@@ -166,11 +165,9 @@ export default class JobSearch extends Component {
                     <HTML
                         source={{ html: this.state.modalHtml }}
                     />
-                    <WebView
-                        style={{ backgroundColor: '#f7f5eee8', height: 20 }}
-                        originWhitelist={['*']}
-                        source={{ html: '<div style="color:black;height:20px;font-size:50px;"><a href="' + a?.attrs.href + '" >' + a?.attrs.href + '</a></div>' }}
-                    />
+                    <Button color="#03A9F4" icon="briefcase" mode="contained" onPress={() => Linking.openURL(a?.attrs.href)}>
+                        Apply Now!
+                    </Button>
                 </View>
             </>
         )
@@ -185,6 +182,7 @@ export default class JobSearch extends Component {
                     ref={this.bs}
                     snapPoints={[550, 300, 0]}
                     borderRadius={10}
+                    enabledContentTapInteraction={false}
                     renderContent={() => this.renderInner()}
                     renderHeader={() => this.renderHeader()}
                     initialSnap={2}

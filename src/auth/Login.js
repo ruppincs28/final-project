@@ -25,14 +25,13 @@ export default class Login extends Component {
                             <TextInput placeholder="Password" placeholderColor="#c4c3cb" onChangeText={(text) => { this.setState({ password: text }) }} style={styles.loginFormTextInput} secureTextEntry={true} />
                             <Button
                                 buttonStyle={styles.loginButton}
-                                onPress={() => this.onLoginPress()}
+                                onPress={this.onLoginPress}
                                 title="Login"
                             />
                             <Button
                                 buttonStyle={styles.fbLoginButton}
                                 onPress={() => this.onRegisterPress()}
                                 title="Register"
-                                color="#3897f1"
                             />
                         </View>
                     </View>
@@ -47,10 +46,10 @@ export default class Login extends Component {
     componentWillUnmount() {
     }
 
-    onLoginPress() {
+    onLoginPress = () => {
         fetch(`${PROD_API}/users/validate`, {
             method: 'POST',
-            body: JSON.stringify({ username: this.state.username, password: this.state.password }),
+            body: JSON.stringify({ username: this.state.username, password: this.state.password, img: '' }),
             headers: new Headers({
                 'Content-Type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json; charset=UTF-8'

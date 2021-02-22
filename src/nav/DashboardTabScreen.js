@@ -5,14 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import CategoriesView from '../CategoriesView';
 import JobSearch from '../JobSearch';
 import JobFavorites from '../JobFavorites';
-
-const ThirdScreen = () => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Third!</Text>
-        </View>
-    );
-}
+import Profile from '../Profile';
 
 const FourthScreen = () => {
     return (
@@ -42,8 +35,8 @@ const DashboardTabScreen = createBottomTabNavigator(
                 }
             }
         },
-        Third: {
-            screen: ThirdScreen,
+        Profile: {
+            screen: Profile,
             navigationOptions: {
                 tabBarLabel: 'Profile',
                 tabBarIcon: ({ tintColor }) => {
@@ -62,7 +55,7 @@ const DashboardTabScreen = createBottomTabNavigator(
         }
     },
     {
-        initialRouteName: 'Third',
+        initialRouteName: 'Profile',
         tabBarOptions: {
             activeTintColor: '#e91e63',
             showIcon: true

@@ -10,7 +10,7 @@ import HTML from "react-native-render-html";
 import JSSoup from 'jssoup';
 import BottomSheet from 'reanimated-bottom-sheet';
 
-export default class JobSearch extends Component {
+export default class Profile extends Component {
     state = {
         search: '',
         location: '',

@@ -21,6 +21,6 @@ The project demonstrates a **salary calculator that is based on the employees ty
 - Linking
 - Permissions
 
-![](screenshots/1.PNG)
+![](screenshots/1.png)
 
-![](screenshots/2.PNG)
+![](screenshots/2.png)

@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import { View, Text, Image, ScrollView, Linking } from 'react-native';
-import { Card, Icon } from 'react-native-elements';
+import { Card } from 'react-native-elements';
 import { withNavigation } from 'react-navigation';
 import { Button } from 'react-native-paper';
-import { JOBS_API } from './services/ApiService';
 import { PROD_API } from './services/ApiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Searchbar } from 'react-native-paper';
-import * as Location from 'expo-location';
+import { asyncGetUserNameFromLocalStorage } from './utils/helpers';
 
 class JobFavorites extends Component {
     state = {
@@ -27,7 +24,7 @@ class JobFavorites extends Component {
     }
 
     getJobs() {
-        this.asyncGetUserNameFromLocalStorage().then(username => {
+        asyncGetUserNameFromLocalStorage().then(username => {
             fetch(`${PROD_API}/jobs/username/${username}`, {
                 method: 'GET',
                 headers: new Headers({
@@ -47,19 +44,6 @@ class JobFavorites extends Component {
     formatDate(string) {
         var options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(string).toLocaleDateString([], options);
-    }
-
-    async asyncGetUserNameFromLocalStorage() {
-        try {
-            const value = await AsyncStorage.getItem('loggedInAs');
-            if (value !== null) {
-                return value;
-            } else {
-                return "";
-            }
-        } catch (e) {
-            console.log(e);
-        }
     }
 
     renderJobs() {
@@ -106,11 +90,11 @@ class JobFavorites extends Component {
 
     render() {
         return this.state.jobs.length !== 0 ?
-            <>
+            <View style={{ backgroundColor: '#F5FCFF' }}>
                 <ScrollView style={{ marginTop: 20 }}>
                     {this.renderJobs()}
                 </ScrollView>
-            </>
+            </View>
             :
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>Fetching favorite jobs...</Text>
@@ -131,7 +115,8 @@ const styles = {
     titleContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        flex: 1
+        flex: 1,
+        backgroundColor: '#F5FCFF'
     },
     title: {
         fontSize: 24

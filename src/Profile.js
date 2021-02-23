@@ -1,309 +1,124 @@
 import React, { Component } from 'react';
-import { Alert, View, Text, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, Linking } from 'react-native';
-import { Card, Icon } from 'react-native-elements';
-import { Button } from 'react-native-paper';
-import { JOBS_API, PROD_API } from './services/ApiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Searchbar } from 'react-native-paper';
-import * as Location from 'expo-location';
-import HTML from "react-native-render-html";
-import JSSoup from 'jssoup';
-import BottomSheet from 'reanimated-bottom-sheet';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity
+} from 'react-native';
+import { PROD_API } from './services/ApiService';
+import { reloadAsync } from 'expo-updates';
+import { asyncGetUserNameFromLocalStorage, removeAsyncStorage } from './utils/helpers';
 
 export default class Profile extends Component {
     state = {
-        search: '',
-        location: '',
-        jobs: [],
-        queriedJobs: [],
-        modalHtml: '&nbsp;',
-        applyHtml: '&nbsp;'
+        user: {}
     };
 
     bs = React.createRef();
 
     async componentDidMount() {
-        let { status } = await Location.requestPermissionsAsync();
-        if (status !== 'granted') {
-            setErrorMsg('Permission to access location was denied');
-            return;
-        }
-
-        let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
-        this.setState({ location: location })
-
-        this.getJobs();
+        this.getUser();
     }
 
-    getJobs() {
-        console.log(`${JOBS_API}lat=${this.state.location.coords.latitude}&long=${this.state.location.coords.longitude}`)
-        fetch(`${JOBS_API}lat=${this.state.location.coords.latitude}&long=${this.state.location.coords.longitude}`, {
-            method: 'GET',
-            headers: new Headers({
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Accept': 'application/json; charset=UTF-8'
+    getUser() {
+        asyncGetUserNameFromLocalStorage().then(username => {
+            fetch(`${PROD_API}/users/username/${username}`, {
+                method: 'GET',
+                headers: new Headers({
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'Accept': 'application/json; charset=UTF-8'
+                })
             })
+                .then(resp => resp.json(), error => console.log(error))
+                .then(data => this.setState({ user: data }), error => console.log(error))
         })
-            .then(resp => resp.json(), error => console.log(error))
-            .then(data => {
-                this.setState({ jobs: data });
-                this.setState({ queriedJobs: data });
-            }, error => console.log(error))
-    }
-
-    updateSearch = (text) => {
-        this.setState({ search: text });
-        this.setState({ queriedJobs: this.state.jobs.filter(job => job.title.includes(text)) });
-    };
-
-    formatDate(string) {
-        var options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(string).toLocaleDateString([], options);
-    }
-
-    async asyncGetUserNameFromLocalStorage() {
-        try {
-            const value = await AsyncStorage.getItem('loggedInAs');
-            if (value !== null) {
-                return value;
-            } else {
-                return "";
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    handleAddToFavorites(username, job) {
-        fetch(`${PROD_API}/jobs/username/${username}`, {
-            method: 'POST',
-            body: JSON.stringify(job),
-            headers: new Headers({
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Accept': 'application/json; charset=UTF-8'
-            })
-        })
-            .then(resp => resp.json())
-            .then(() => Alert.alert(
-                'Job added to favorites successfully'
-            ), error => console.log(error))
-    }
-
-    renderJobs() {
-        return this.state.queriedJobs.map(job => {
-            const {
-                url,
-                title,
-                description,
-                id,
-                company,
-                created_at,
-                how_to_apply,
-                company_logo
-            } = job;
-
-            return (
-                <Card title={title} key={id} jobId={id}>
-                    <View style={{ height: 220 }}>
-                        <View style={{
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            <Image source={{ uri: company_logo }} style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                resizeMode: 'center',
-                                height: 100,
-                                width: 200
-                            }} />
-                        </View>
-                        <View style={styles.detailWrapper}>
-                            <Text style={styles.italics}>{company}</Text>
-                            <Text style={styles.italics}>{this.formatDate(created_at)}</Text>
-                        </View>
-                        <Button color="#03A9F4" icon="dots-horizontal-circle" mode="contained" onPress={() => {
-                            this.setState({ modalHtml: description, applyHtml: how_to_apply });
-                            this.bs.current.snapTo(0);
-                        }}>
-                            Show more
-                        </Button>
-                        <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained"
-                            onPress={() => this.asyncGetUserNameFromLocalStorage().then(username => this.handleAddToFavorites(username, {
-                                Id: id,
-                                Title: title,
-                                Company: company,
-                                CreatedAt: created_at,
-                                Url: url,
-                                CompanyLogo: company_logo
-                            }))}>
-                            Add to favorites!
-                        </Button>
-                    </View>
-                </Card>
-            );
-        });
-    }
-
-    renderHeader() {
-        return (
-            <View style={styles.header}>
-                <View style={styles.panelHeader}>
-                    <View style={styles.panelHandle} />
-                </View>
-            </View>
-        )
-    }
-
-    renderInner() {
-        let soup = new JSSoup(this.state.applyHtml);
-        let a = soup.find('a');
-
-        return (
-            <>
-                <View style={styles.panel}>
-                    <Text style={styles.panelTitle}>Job Description</Text>
-                    <HTML
-                        source={{ html: this.state.modalHtml }}
-                    />
-                    <Button color="#03A9F4" icon="briefcase" mode="contained" onPress={() => Linking.openURL(a?.attrs.href)}>
-                        Apply Now!
-                    </Button>
-                </View>
-            </>
-        )
     }
 
     render() {
-        const { search } = this.state;
-
-        return this.state.jobs.length !== 0 ?
+        return (
             <View style={styles.container}>
-                <BottomSheet
-                    ref={this.bs}
-                    snapPoints={[550, 300, 0]}
-                    borderRadius={10}
-                    enabledContentTapInteraction={false}
-                    renderContent={() => this.renderInner()}
-                    renderHeader={() => this.renderHeader()}
-                    initialSnap={2}
-                />
-                <Searchbar
-                    placeholder="Search for a position"
-                    onChangeText={this.updateSearch}
-                    value={search}
-                    style={{ marginTop: 30, marginLeft: 10, marginRight: 10 }}
-                />
-                <ScrollView style={{ marginTop: 20 }}>
-                    {this.renderJobs()}
-                </ScrollView>
+                <View style={styles.header}></View>
+                <Image style={styles.avatar} source={{ uri: this.state.user.Img }} />
+                <View style={styles.body}>
+                    <View style={styles.bodyContent}>
+                        <Text style={styles.name}>{this.state.user.Username}</Text>
+                        <Text style={styles.info}>UX Designer / Mobile developer</Text>
+                        <Text style={styles.description}>Lorem ipsum dolor sit amet, saepe sapientem eu nam. Qui ne assum electram expetendis, omittam deseruisse consequuntur ius an,</Text>
+
+                        <TouchableOpacity
+                            style={styles.buttonContainer}
+                            onPress={() => removeAsyncStorage().then(res => {
+                                if (res === "EmptiedAsyncStorage") {
+                                    reloadAsync();
+                                }
+                            })}>
+                            <Text>Log Out</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.buttonContainer}>
+                            <Text>Opcion 2</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-            :
-            <View style={styles.titleContainer}>
-                <Text style={styles.title}>Searching for jobs in your area...</Text>
-            </View>
+        );
     }
 }
 
-const styles = {
-    italics: {
-        fontStyle: 'italic'
-    },
-    detailWrapper: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 10
-    },
-    titleContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1
-    },
-    title: {
-        fontSize: 24
-    },
-    searchBar: {
-        position: 'absolute',
-        left: 10,
-        top: 10,
-        right: 10,
-        height: 50,
-        zIndex: 1,
-        backgroundColor: 'white'
-    },
-    search: {
-        borderColor: 'gray',
-        borderWidth: StyleSheet.hairlineWidth,
-        height: 40,
-        borderRadius: 10,
-        paddingHorizontal: 15,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#F5FCFF',
-    },
-    box: {
-        width: 200,
+const styles = StyleSheet.create({
+    header: {
+        backgroundColor: "#00BFFF",
         height: 200,
     },
-    panelContainer: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-    },
-    panel: {
-        height: 2500,
-        padding: 20,
-        backgroundColor: '#f7f5eee8',
-    },
-    header: {
-        backgroundColor: '#f7f5eee8',
-        shadowColor: '#000000',
-        paddingTop: 20,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-    },
-    panelHeader: {
-        alignItems: 'center',
-    },
-    panelHandle: {
-        width: 40,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#00000040',
+    avatar: {
+        width: 130,
+        height: 130,
+        borderRadius: 63,
+        borderWidth: 4,
+        borderColor: "white",
         marginBottom: 10,
+        alignSelf: 'center',
+        position: 'absolute',
+        marginTop: 130
     },
-    panelTitle: {
-        fontSize: 27,
-        height: 35,
+    name: {
+        fontSize: 22,
+        color: "#FFFFFF",
+        fontWeight: '600',
+    },
+    body: {
+        marginTop: 40,
+    },
+    bodyContent: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 30,
+    },
+    name: {
+        fontSize: 28,
+        color: "#696969",
+        fontWeight: "600"
+    },
+    info: {
+        fontSize: 16,
+        color: "#00BFFF",
+        marginTop: 10
+    },
+    description: {
+        fontSize: 16,
+        color: "#696969",
+        marginTop: 10,
         textAlign: 'center'
     },
-    panelSubtitle: {
-        fontSize: 14,
-        color: 'gray',
-        height: 30,
-        marginBottom: 10,
-    },
-    panelButton: {
-        padding: 20,
-        borderRadius: 10,
-        backgroundColor: '#318bfb',
+    buttonContainer: {
+        marginTop: 10,
+        height: 45,
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginVertical: 10,
+        marginBottom: 20,
+        width: 250,
+        borderRadius: 30,
+        backgroundColor: "#00BFFF",
     },
-    panelButtonTitle: {
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    photo: {
-        width: '100%',
-        height: 225,
-        marginTop: 30,
-    },
-    map: {
-        height: '100%',
-        width: '100%',
-    },
-};
+});

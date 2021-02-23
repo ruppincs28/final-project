@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { Alert, View, Text, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, Linking } from 'react-native';
-import { Card, Icon } from 'react-native-elements';
+import { Card } from 'react-native-elements';
 import { Button } from 'react-native-paper';
 import { JOBS_API, PROD_API } from './services/ApiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
 import HTML from "react-native-render-html";
 import JSSoup from 'jssoup';
 import BottomSheet from 'reanimated-bottom-sheet';
+import { asyncGetUserNameFromLocalStorage } from './utils/helpers';
 
 export default class JobSearch extends Component {
     state = {
@@ -59,19 +59,6 @@ export default class JobSearch extends Component {
     formatDate(string) {
         var options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(string).toLocaleDateString([], options);
-    }
-
-    async asyncGetUserNameFromLocalStorage() {
-        try {
-            const value = await AsyncStorage.getItem('loggedInAs');
-            if (value !== null) {
-                return value;
-            } else {
-                return "";
-            }
-        } catch (e) {
-            console.log(e);
-        }
     }
 
     handleAddToFavorites(username, job) {
@@ -128,7 +115,7 @@ export default class JobSearch extends Component {
                             Show more
                         </Button>
                         <Button style={{ marginTop: 7 }} color="pink" icon="cards-heart" mode="contained"
-                            onPress={() => this.asyncGetUserNameFromLocalStorage().then(username => this.handleAddToFavorites(username, {
+                            onPress={() => asyncGetUserNameFromLocalStorage().then(username => this.handleAddToFavorites(username, {
                                 Id: id,
                                 Title: title,
                                 Company: company,
@@ -216,7 +203,8 @@ const styles = {
     titleContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        flex: 1
+        flex: 1,
+        backgroundColor: '#F5FCFF'
     },
     title: {
         fontSize: 24

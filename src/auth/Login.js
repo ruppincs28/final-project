@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { StyleSheet, Keyboard, Text, View, TextInput, TouchableWithoutFeedback, Alert, KeyboardAvoidingView } from 'react-native';
 import { Button } from 'react-native-elements';
 import { PROD_API } from '../services/ApiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storeInAsyncLocalStorage } from '../utils/helpers';
 
 export default class Login extends Component {
     state = {
@@ -58,7 +58,7 @@ export default class Login extends Component {
             .then(resp => resp.json())
             .then((resp) => {
                 if (resp !== "Invalid Credentials") {
-                    this.storeInAsyncLocalStorage(this.state.username).then(() => {
+                    storeInAsyncLocalStorage(this.state.username).then(() => {
                         this.props.navigation.navigate('DashboardTab');
                     });
 
@@ -68,15 +68,6 @@ export default class Login extends Component {
 
     onRegisterPress() {
         this.props.navigation.navigate('Register');
-    }
-
-    async storeInAsyncLocalStorage(value) {
-        try {
-            await AsyncStorage.setItem('loggedInAs', value);
-            console.log("Successfully saved in AsyncStorage")
-        } catch (e) {
-            console.log(e);
-        }
     }
 }
 

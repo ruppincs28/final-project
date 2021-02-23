@@ -22,7 +22,7 @@ import * as firebase from 'firebase';
 import { Button } from 'react-native-elements';
 import { v4 as uuidv4 } from 'uuid';
 import { PROD_API } from '../services/ApiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storeInAsyncLocalStorage } from '../utils/helpers';
 
 const firebaseConfig = {
     apiKey: 'AIzaSyBtgSqXRCiFMd0c_AtSX7-8xUIjd3C_71s',
@@ -53,15 +53,6 @@ export default class Register extends Component {
         await Permissions.askAsync(Permissions.CAMERA);
     }
 
-    async storeInAsyncLocalStorage(value) {
-        try {
-            await AsyncStorage.setItem('loggedInAs', value);
-            console.log("Successfully saved in AsyncStorage")
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
     onRegisterPress = () => {
         let userObj = {
             Username: this.state.username,
@@ -79,7 +70,7 @@ export default class Register extends Component {
             .then(resp => resp.json())
             .then((resp) => {
                 if (resp !== "Invalid Credentials") {
-                    this.storeInAsyncLocalStorage(this.state.username).then(() => {
+                    storeInAsyncLocalStorage(this.state.username).then(() => {
                         this.props.navigation.navigate('DashboardTab');
                     });
 

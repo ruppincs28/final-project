@@ -55,7 +55,7 @@ const DashboardTabScreen = createBottomTabNavigator(
         }
     },
     {
-        initialRouteName: 'Profile',
+        initialRouteName: 'JobSearch',
         tabBarOptions: {
             activeTintColor: '#e91e63',
             showIcon: true

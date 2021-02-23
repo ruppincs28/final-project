@@ -4,9 +4,11 @@ import {
     Text,
     View,
     Image,
+    Alert,
     TouchableOpacity
 } from 'react-native';
 import { PROD_API } from './services/ApiService';
+import { Button } from 'react-native-paper';
 import { reloadAsync } from 'expo-updates';
 import { asyncGetUserNameFromLocalStorage, removeAsyncStorage } from './utils/helpers';
 
@@ -35,6 +37,18 @@ export default class Profile extends Component {
         })
     }
 
+    deleteUser() {
+
+    }
+
+    removeAsyncStorageAndReloadApp() {
+        removeAsyncStorage().then(res => {
+            if (res === "EmptiedAsyncStorage") {
+                reloadAsync();
+            }
+        })
+    }
+
     render() {
         return (
             <View style={styles.container}>
@@ -43,31 +57,56 @@ export default class Profile extends Component {
                 <View style={styles.body}>
                     <View style={styles.bodyContent}>
                         <Text style={styles.name}>{this.state.user.Username}</Text>
-                        <Text style={styles.info}>UX Designer / Mobile developer</Text>
-                        <Text style={styles.description}>Lorem ipsum dolor sit amet, saepe sapientem eu nam. Qui ne assum electram expetendis, omittam deseruisse consequuntur ius an,</Text>
+                        <Text style={styles.info}>Enthusiastic Job Seeker</Text>
+                        <Text style={styles.description}>"If you will pump long enough, hard enough, and enthusiastically enough, sooner or later the effort will bring forth the reward."</Text>
+                        <Text></Text>
 
-                        <TouchableOpacity
-                            style={styles.buttonContainer}
-                            onPress={() => removeAsyncStorage().then(res => {
-                                if (res === "EmptiedAsyncStorage") {
-                                    reloadAsync();
-                                }
-                            })}>
-                            <Text>Log Out</Text>
+                        <TouchableOpacity style={styles.buttonContainer}>
+                            <Button
+                                color="#03A9F4"
+                                icon="logout-variant"
+                                mode="contained"
+                                onPress={() => this.removeAsyncStorageAndReloadApp()}>
+                                Account - Logout
+                        </Button>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.buttonContainer}>
-                            <Text>Opcion 2</Text>
+                            <Button
+                                color="red"
+                                icon="delete-forever"
+                                mode="contained"
+                                onPress={() => Alert.alert(
+                                    'Confirm Deletion',
+                                    'Please confirm that you want to delete your account',
+                                    [
+                                        {
+                                            text: 'Cancel',
+                                            onPress: () => console.log('Cancel Pressed'),
+                                            style: 'cancel'
+                                        },
+                                        {
+                                            text: 'OK',
+                                            onPress: () => {
+                                                this.deleteUser("DELETE");
+                                                this.removeAsyncStorageAndReloadApp();
+                                            }
+                                        }
+                                    ],
+                                    { cancelable: false }
+                                )}>
+                                Account - Delete
+                        </Button>
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </View >
         );
     }
 }
 
 const styles = StyleSheet.create({
     header: {
-        backgroundColor: "#00BFFF",
+        backgroundColor: "#03A9F4",
         height: 200,
     },
     avatar: {
@@ -112,13 +151,12 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         marginTop: 10,
-        height: 45,
+        height: 25,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
-        width: 250,
+        width: 195,
         borderRadius: 30,
-        backgroundColor: "#00BFFF",
     },
 });

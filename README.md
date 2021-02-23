@@ -3,7 +3,7 @@
 Natanel Endelshtein  
 Alex Kalenyuk
 
-*Note*:
+**Note**:
 Server-side code is located under [`backend-code`](backend-code)
 
 ## Plugins

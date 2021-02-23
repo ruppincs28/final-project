@@ -39,7 +39,7 @@ DELETE FROM jobsOfUsers_native_final_cs
 
 
 INSERT INTO users_native_final_cs ([username], [password], [img]) 
-Values(N'lxnt', N'lxnt', N'https://www.links.org.il/sites/default/files/images/portrates/benny.jpg')
+Values(N'lxnt', N'lxnt', N'https://i2-prod.irishmirror.ie/incoming/article22680559.ece/ALTERNATES/s615b/2_Liverpool-FC-v-Aston-Villa-Premier-League.jpg')
 
 INSERT INTO jobs_native_final_cs ([id], [title], [company], [createdat], [url], [companylogo]) 
 Values(N'0a8dd9c0-6b66-44be-99b0-cca5c3556ca7', N'sakit', N'Sakitsh0k0', N'Thu Feb 11 18:15:21 UTC 2021', N'https://jobs.github.com/positions/fb73d8f4-6cf4-4559-9fc8-ce5e358bfafd', N'https://jobs.github.com/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdkdZIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--e6c1af228b81fb2fd01c6b28b93d9a12bc7944a8/CPS-Logo-high-res2.jpg')

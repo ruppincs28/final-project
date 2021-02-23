@@ -1,19 +1,10 @@
 import React, { Component } from 'react';
-import { Text, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import CategoriesView from '../CategoriesView';
 import JobSearch from '../JobSearch';
 import JobFavorites from '../JobFavorites';
 import Profile from '../Profile';
-
-const FourthScreen = () => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Fourth!</Text>
-        </View>
-    );
-}
+import About from '../About';
 
 const DashboardTabScreen = createBottomTabNavigator(
     {
@@ -44,8 +35,8 @@ const DashboardTabScreen = createBottomTabNavigator(
                 }
             }
         },
-        Fourth: {
-            screen: FourthScreen,
+        About: {
+            screen: About,
             navigationOptions: {
                 tabBarLabel: 'About',
                 tabBarIcon: ({ tintColor }) => {

@@ -38,7 +38,15 @@ export default class Profile extends Component {
     }
 
     deleteUser() {
-
+        fetch(`${PROD_API}/users/username/${this.state.user.Username}`, {
+            method: 'DELETE',
+            headers: new Headers({
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Accept': 'application/json; charset=UTF-8'
+            })
+        })
+            .then(resp => resp.json())
+            .then(() => this.removeAsyncStorageAndReloadApp(), error => console.log(error))
     }
 
     removeAsyncStorageAndReloadApp() {
@@ -86,10 +94,7 @@ export default class Profile extends Component {
                                         },
                                         {
                                             text: 'OK',
-                                            onPress: () => {
-                                                this.deleteUser("DELETE");
-                                                this.removeAsyncStorageAndReloadApp();
-                                            }
+                                            onPress: () => { this.deleteUser() }
                                         }
                                     ],
                                     { cancelable: false }

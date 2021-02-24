@@ -22,6 +22,7 @@ Server-side code is located under [`backend-code`](backend-code), and queries ar
 
 ### Minor
 
+- AsyncStorage
 - Constants
 - Linking
 - Permissions
